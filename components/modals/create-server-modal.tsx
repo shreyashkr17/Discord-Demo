@@ -1,8 +1,11 @@
 "use client";
 
+// import { useRouter } from "next/router";
+import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useModal } from "@/hooks/use-modal-store";
 
 import {
     Dialog,
@@ -23,42 +26,52 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { FileUpload } from "@/components/ui/file-upload";
+import { FileUpload } from "@/components/file-upload";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
-    name: z.string().nonempty({
+    name: z.string().min(1,{
         message: "Server name is required"
     }),
-    imageURL: z.string().url({
+    imageUrl: z.string().min(1,{
         message: "Image URL is required"
     })
 })
 
-export const InitialModals = () => {
-    const [isMounted,setIsMounted] = useState(false);
+export const CreateServerModal = () => {
+    const {isOpen, onClose, type} = useModal();
+    const router = useRouter();
 
-    useEffect(() => {
-        setIsMounted(true);
-    },[])
+    const isModalOpen = isOpen && type === "createServer";
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name:"",
-            imageURL:"",
+            imageUrl:"",
         }
     })
 
     const isLoading = form.formState.isSubmitting;
     
     const onSubmit = async (values:z.infer<typeof formSchema>) => {
-        console.log(values);
+        try {
+            await axios.post("/api/servers",values);
+
+            form.reset();
+            router.refresh();
+        } catch (error) {
+            console.log(error);
+        }
+    }   
+    
+    const handleClose = () => {
+        form.reset();
+        onClose();
     }
 
-    if(!isMounted) return null;
-
     return (
-        <Dialog open={true}>
+        <Dialog open={isModalOpen} onOpenChange={handleClose}>
             <DialogContent className="bg-white text-black p-0 overflow-hidden">
                 <DialogHeader className="pt-8 px-6">
                     <DialogTitle className="text-2xl text-center font-bold">
@@ -73,19 +86,19 @@ export const InitialModals = () => {
                         <div className="space-y-8 px-6">
                             <div className="flex item-center justify-center text-center">
                                 <FormField 
-                                control={form.control} 
-                                name='imageUrl'
-                                render = {({field}) => (
-                                    <FormItem>
-                                        <FormControl>
-                                            <FileUpload
-                                                endpoint="serverImage"
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
+                                    control={form.control} 
+                                    name="imageUrl"
+                                    render = {({field}) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <FileUpload
+                                                    endpoint="serverImage"
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
                                 />
                             </div>
 
