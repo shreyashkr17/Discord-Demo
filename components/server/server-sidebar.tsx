@@ -7,6 +7,7 @@ import { ServerHeader } from "./server-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ServerSearch } from "./server-search";
 import { Hash, Mic, Shield, ShieldAlert, ShieldCheck, Video } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 // import { ChannelType } from "@prisma/client";
 // im[port redirect ]
 
@@ -107,6 +108,8 @@ export const ServerSidebar = async ({
                         ]}
                     />
                 </div>
+                <Separator className="bg-zinc-200 dark:dar:bg-zinc-700 rounded-md my-2"/>
+                {!!textChannel?.length}
             </ScrollArea>
         </div>
     )
